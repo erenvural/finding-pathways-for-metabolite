@@ -1,9 +1,17 @@
-# Get Pathways
+# Finding Pathways for a given metabolite
 
+## Project Details
+__Question__: Given a metabolite can you find the pathways/network it and its immediate precursors
+exist?
+* Metabolite can be by name, formula, smiles code. (Chebi, PubChem etc. identifier) (Query expansion)
+* Pathway could be from any database (Wikipathways, Reactome etc.).
+* Use pathway, reaction, chemical compound/human metabolite databases.
+
+##  Steps
 - Take a metabolite name from user (e.g: _`aspirin`_):
-
 - Getting search result for metabolite from CheBI:
 	* for first search: "https://www.ebi.ac.uk/chebi/advancedSearchFT.do?queryBean.stars=2&searchString=aspirin"
+
 
 - Getting synonyms for every search result from CheBI and store the synonyms in a file called `metabolite_name.json` (e.g: _`aspirin.json`_):
 	* for metabolite details: "https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:15365"
@@ -26,17 +34,14 @@
 	}
 	```
 
-- For All keywords (metabolite & synonyms) we search for reactions from KEGG Reactions.(We prune the data which contains the keyword within right side)
 
+- For All keywords (metabolite & synonyms) we search for reactions from KEGG Reactions.(We prune the data which contains the keyword within right side)
 	* Link (glutamate)=> http://www.kegg.jp/dbget-bin/www_bfind_sub?dbkey=reaction&keywords=glutamate&mode=bfind&max_hit=nolimit
 
-- For Pathway we search trough the Reactome Pathway, KEGG Pathway, Wikipathway, and return the result set.
 
+- For Pathway we search trough the Reactome Pathway, KEGG Pathway, Wikipathway, and return the result set.
 	* Link (aspirin) => http://www.reactome.org/content/query?q=aspirin&species=Homo+sapiens&species=Entries+without+species&types=Pathway&cluster=true
 
 
-
-
-
-### Questions:
+## Questions:
 - to prune we need a list which contains: `CO2`, `H2O`
