@@ -37,6 +37,9 @@ exist?
 
 - For All keywords (metabolite & synonyms) we search for reactions from KEGG Reactions.(We prune the data which contains the keyword within right side)
 	* Link (glutamate)=> http://www.kegg.jp/dbget-bin/www_bfind_sub?dbkey=reaction&keywords=glutamate&mode=bfind&max_hit=nolimit
+	* Restfull API: "http://rest.kegg.jp/find/rn/glutamate" or "http://rest.kegg.jp/find/reaction/glutamate": it gives us a flat file.
+	* The following command get the left side part of the <=>. Edit for metabolite and synonyms to getting better results.
+	```perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){print "$1\n"}}' < glutamate.txt```
 
 
 - For Pathway we search trough the Reactome Pathway, KEGG Pathway, Wikipathway, and return the result set.
@@ -44,4 +47,4 @@ exist?
 
 
 ## Questions:
-- to prune we need a list which contains: `CO2`, `H2O`: use Frequency to detect those words.
+- to prune we need a list which contains: `CO2`, `H2O`: use Frequency to detect those words (stopwords detecting like method). 

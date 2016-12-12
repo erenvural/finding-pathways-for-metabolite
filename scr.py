@@ -65,3 +65,10 @@ for c_id in compound_id_list:
 
 with open(metabolite_name + '.json', 'w') as fp:
 		json.dump(result, fp)
+
+
+"""
+http://rest.kegg.jp/find/rn/glutamate
+or 
+http://rest.kegg.jp/find/reaction/glutamate
+"""
