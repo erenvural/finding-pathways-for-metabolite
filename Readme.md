@@ -44,4 +44,4 @@ exist?
 
 
 ## Questions:
-- to prune we need a list which contains: `CO2`, `H2O`
+- to prune we need a list which contains: `CO2`, `H2O`: use Frequency to detect those words.
