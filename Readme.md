@@ -48,3 +48,48 @@ exist?
 
 ## Questions:
 - to prune we need a list which contains: `CO2`, `H2O`: use Frequency to detect those words (stopwords detecting like method). 
+
+
+
+```
+perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /glutamate/i) { print "$1\n" }  }}' < glutamate | wc
+
+http://rest.kegg.jp/find/pathway/glutamate
+
+
+http://www.kegg.jp/kegg-bin/search_pathway_text?map=map&keyword=map00250&mode=1&viewImage=true
+```
+### The requierement for Presentation:
+
+#### 1. Describe your problem/research question.
+
+__Question__: Given a metabolite can you find the pathways/network it and its immediate precursors exist?
+	- Metabolite can be by name, formula, smiles code. (Chebi, PubChem etc. identifier) (Query expansion)
+	- Pathway could be from any database (Wikipathways, Reactome etc.).
+	- Use pathway, reaction, chemical compound/human metabolite databases.
+
+#### 2. List team members and  their roles.
+
+| Team Members            | Github Accounts                           |
+|-------------------------|-------------------------------------------|
+| Eren VURAL              |[erenvural](https://github.com/erenvural)  |
+| Mahmut KOÇAKER          |[mkocaker06](https://github.com/mkocaker06)|
+| Muhammed Olcay TERCANLI |[molcay](https://github.com/molcay)        |
+
+#### 3. Describe the method employed. Be specific on steps and name of tools/databases.
+* We get the metabolite name from user.
+* We search the metabolite on __CheBI__ and get the results for a metabolite(a query can match with multiple entry on __CheBI__).
+* We visit every matches pages and getting the synonyms for the given metabolite.
+* We search through the __KEGG Reaction__ and getting precursor for the given metabolite and its synonyms.
+* When collection of all synonyms and precursors have done, we search for pathways with metabolite name, synonyms and precursors.
+* As a result we list the pathways from __WikiPathways__, __Reactome__ etc.:
+
+	| METABOLITE_NAME		| Metabolite(M)/Synonyms(S)/Precursor(P)		| PATHWAYS 		        |
+	|-----------------------|-----------------------------------------------|-----------------------|
+	| Aspirin 				| M 											| URL(wikipathways/asd) |
+
+#### 4. Provide example codes and scripts and describe how you organized them.
+
+#### 5. Run a demo with a described example scenario 
+
+#### 6.  Provide pointers to source code (GitHub/Attassian BitBucket/Zip file etc.)
