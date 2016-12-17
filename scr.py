@@ -11,8 +11,24 @@ print 'reverse complement is %s' % my_seq.reverse_complement()
 print 'protein translation is %s' % my_seq.translate()
 
 """
+# import getopt ##
+# import sys    ##
 import os, re, json, urllib2
 import xml.etree.ElementTree as ET
+
+# metabolite_name = ""
+# SEARCH_URL = ""
+#
+# sys_args = sys.argv[1:]
+# # print sys.argv[1:]
+# options, remainder = getopt.getopt(sys.argv[1:], 'o:v', ['metabolite=',
+# 														 'url='])
+#
+# for opt, arg in options:
+#     if opt in ('-m', '--metabolite'):
+#         metabolite_name = arg
+#     elif opt in ('-u', '--url'):
+#         SEARCH_URL = arg
 
 SEARCH_URL = "https://www.ebi.ac.uk/chebi/advancedSearchFT.do?queryBean.stars=2&searchString="
 
@@ -22,7 +38,7 @@ XML_URL = "https://www.ebi.ac.uk/webservices/chebi/2.0/test/getCompleteEntity?ch
 
 
 # metabolite_name = str(raw_input("Give a metabolite name: "))
-metabolite_name = "aspirin"
+# metabolite_name = "aspirin"
 
 
 fsp_url = SEARCH_URL + metabolite_name.replace(" ", "+")
@@ -69,6 +85,6 @@ with open(metabolite_name + '.json', 'w') as fp:
 
 """
 http://rest.kegg.jp/find/rn/glutamate
-or 
+or
 http://rest.kegg.jp/find/reaction/glutamate
 """
