@@ -38,7 +38,7 @@ XML_URL = "https://www.ebi.ac.uk/webservices/chebi/2.0/test/getCompleteEntity?ch
 
 
 # metabolite_name = str(raw_input("Give a metabolite name: "))
-# metabolite_name = "aspirin"
+metabolite_name = "aspirin"
 
 
 fsp_url = SEARCH_URL + metabolite_name.replace(" ", "+")
