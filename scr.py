@@ -14,6 +14,8 @@ print 'protein translation is %s' % my_seq.translate()
 import os, re, json, urllib2
 import xml.etree.ElementTree as ET
 
+__JAVA_HOME__ = "/opt/java/jdk1.8.0_101/bin/"
+
 SEARCH_URL = "https://www.ebi.ac.uk/chebi/advancedSearchFT.do?queryBean.stars=2&searchString="
 
 COMPOUND_URL = "https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:"
@@ -31,13 +33,13 @@ def getSynonyms(xml_file_url):
 
 	root = ET.fromstring(xml_page)
 	body = root.find("{}Body".format(__XML_IDENTIFIER_FOR_SOAP_ENVELOPE__))
-	getCompleteEntityResponse = body.find("{}getCompleteEntityResponse".format(__XML_IDENTIFIER_FOR_CHEBI__))
-	for comp in getCompleteEntityResponse.findall("{}return".format(__XML_IDENTIFIER_FOR_CHEBI__)):
-		compound_name = comp.find("{}chebiAsciiName".format(__XML_IDENTIFIER_FOR_CHEBI__)).text
-		synonyms = comp.findall("{}Synonyms".format(__XML_IDENTIFIER_FOR_CHEBI__))
+	getCompleteEntityResponse = body.find("{0}getCompleteEntityResponse".format(__XML_IDENTIFIER_FOR_CHEBI__))
+	for comp in getCompleteEntityResponse.findall("{0}return".format(__XML_IDENTIFIER_FOR_CHEBI__)):
+		compound_name = comp.find("{0}chebiAsciiName".format(__XML_IDENTIFIER_FOR_CHEBI__)).text
+		synonyms = comp.findall("{0}Synonyms".format(__XML_IDENTIFIER_FOR_CHEBI__))
 		synonyms_list = []
 		for syn in synonyms:
-			synonym_name = syn.find("{http://www.ebi.ac.uk/webservices/chebi}data").text
+			synonym_name = syn.find("{0}data".format(__XML_IDENTIFIER_FOR_CHEBI__)).text
 			synonyms_list.append(synonym_name)
 	# print(synonyms_list)
 	compound = {
@@ -52,8 +54,12 @@ def getSynonyms(xml_file_url):
 def getPrecursors(metabolite_name):
 	command = """curl http://rest.kegg.jp/find/rn/%s | perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /%s/i) { print "$1\\n" }  }}' > %s.clean.txt""" % (metabolite_name, metabolite_name, metabolite_name)
 	os.system(command)
-	command = "java GetPrecursors {0}".format(metabolite_name)
+	"""
+	command = "{}java GetPrecursors {0}".format(__JAVA_HOME__, metabolite_name)
 	os.system(command)
+	# os.system("mkdir temp")
+	# os.system("rm -rf temp")
+	"""
 
 
 def parseCheBI():
@@ -86,8 +92,6 @@ for c_id in compound_id_list:
 	result[metabolite_name].append(compound)
 	# getPrecursors(metabolite_name)
 	# print(result)
-
-search_terms = []
 
 with open(metabolite_name + '.json', 'w') as fp:
 		json.dump(result, fp, indent=4)
