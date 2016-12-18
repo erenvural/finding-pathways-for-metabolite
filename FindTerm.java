@@ -1,4 +1,4 @@
-package com.bio.project;
+//package com.bio.project;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,15 +17,26 @@ public class FindTerm {
 	public static ArrayList<String> targetCompunds = new ArrayList<String>();
 	
 	public static void main(String[] args) throws IOException {
-		File dir=new File("C:\\Users\\eren\\Desktop\\File");
+		/*File dir=new File("");
 		File[] list=dir.listFiles();
 		for(int i=0;i<list.length;i++){
 		     allTerms.add(list[i].getName());
 		    }  
+		*/
+
+	    String search_key = args[0].toString();
+		List<String> filecontents = Files.readAllLines(Paths.get(search_key + ".txt"));
+		for (String line: filecontents) {
+			// System.out.println(line);
+			String mainCompound = (String) line.substring(0, line.indexOf(";"));
+			System.out.println("√ Valid Sequence ! Main Compound = " + mainCompound);
+		}
+		//System.out.println(filecontents.size());
 		
+		/*
 		for (String cursor : allTerms) {
 			cursor = cursor.replace(".txt", "");
-			List<String> lines = Files.readAllLines(Paths.get("C:\\Users\\eren\\Desktop\\File\\"+cursor+".txt"));
+			List<String> lines = Files.readAllLines(Paths.get(cursor+".txt"));
 			for (String line : lines) {
 				if (line.indexOf(cursor) < line.indexOf(">")) {
 					System.out.println("X Invalid Sequence  ");
@@ -105,7 +116,8 @@ public class FindTerm {
 			System.out.println();
 			System.out.println(targetCompoundNumber + " Target Compounds");
 			System.out.println("________________________________________________");
+			
 		}
-	
+	*/
 	}
 }

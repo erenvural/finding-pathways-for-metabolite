@@ -20,6 +20,47 @@ COMPOUND_URL = "https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:"
 
 XML_URL = "https://www.ebi.ac.uk/webservices/chebi/2.0/test/getCompleteEntity?chebiId="
 
+__XML_IDENTIFIER_FOR_CHEBI__ = "{http://www.ebi.ac.uk/webservices/chebi}"
+__XML_IDENTIFIER_FOR_SOAP_ENVELOPE__ = "{http://schemas.xmlsoap.org/soap/envelope/}"
+
+def getSynonyms(xml_file_url):
+
+	req = urllib2.Request(xml_file_url)
+	response = urllib2.urlopen(req)
+	xml_page = response.read()
+
+	root = ET.fromstring(xml_page)
+	body = root.find("{}Body".format(__XML_IDENTIFIER_FOR_SOAP_ENVELOPE__))
+	getCompleteEntityResponse = body.find("{}getCompleteEntityResponse".format(__XML_IDENTIFIER_FOR_CHEBI__))
+	for comp in getCompleteEntityResponse.findall("{}return".format(__XML_IDENTIFIER_FOR_CHEBI__)):
+		compound_name = comp.find("{}chebiAsciiName".format(__XML_IDENTIFIER_FOR_CHEBI__)).text
+		synonyms = comp.findall("{}Synonyms".format(__XML_IDENTIFIER_FOR_CHEBI__))
+		synonyms_list = []
+		for syn in synonyms:
+			synonym_name = syn.find("{http://www.ebi.ac.uk/webservices/chebi}data").text
+			synonyms_list.append(synonym_name)
+	# print(synonyms_list)
+	compound = {
+		'compound_id': c_id,
+		'compound_name': compound_name.replace(" ", ""),
+		'synonyms': synonyms_list,
+		'precursors': [getPrecursors(c) for c in synonyms_list]
+	}
+	return compound
+
+
+def getPrecursors(metabolite_name):
+	command = """curl http://rest.kegg.jp/find/rn/%s | perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /%s/i) { print "$1\\n" }  }}' > %s.clean.txt""" % (metabolite_name, metabolite_name, metabolite_name)
+	os.system(command)
+	command = "java GetPrecursors {0}".format(metabolite_name)
+	os.system(command)
+
+
+def parseCheBI():
+	pass
+
+def parsePrecursor():
+	pass
 
 # metabolite_name = str(raw_input("Give a metabolite name: "))
 metabolite_name = "aspirin"
@@ -37,38 +78,28 @@ for m in re.finditer(r'(?<=CHEBI:)\d+', the_fsp):
 
 result = { metabolite_name : [] }
 for c_id in compound_id_list:
-	c_url = COMPOUND_URL + c_id
+	# c_url = COMPOUND_URL + c_id
 
 	xml_file_url = XML_URL + c_id
-	req = urllib2.Request(xml_file_url)
-	response = urllib2.urlopen(req)
-	the_page = response.read()
+	compound = getSynonyms(xml_file_url)
 
-	root = ET.fromstring(the_page)
-	body = root.find("{http://schemas.xmlsoap.org/soap/envelope/}Body")
-	getCompleteEntityResponse = body.find("{http://www.ebi.ac.uk/webservices/chebi}getCompleteEntityResponse")
-	for comp in getCompleteEntityResponse.findall("{http://www.ebi.ac.uk/webservices/chebi}return"):
-		compound_name = comp.find("{http://www.ebi.ac.uk/webservices/chebi}chebiAsciiName").text
-		synonyms = comp.findall("{http://www.ebi.ac.uk/webservices/chebi}Synonyms")
-		synonyms_list = []
-		for syn in synonyms:
-			synonym_name = syn.find("{http://www.ebi.ac.uk/webservices/chebi}data").text
-			synonyms_list.append(synonym_name)
-	# print(synonyms_list)
-	compound = {
-		'compound_id': c_id,
-		'compound_name': compound_name.replace(" ", ""),
-		'synonyms': synonyms_list
-	}
 	result[metabolite_name].append(compound)
+	# getPrecursors(metabolite_name)
 	# print(result)
 
-with open(metabolite_name + '.json', 'w') as fp:
-		json.dump(result, fp)
+search_terms = []
 
+with open(metabolite_name + '.json', 'w') as fp:
+		json.dump(result, fp, indent=4)
+
+
+# 
 
 """
 http://rest.kegg.jp/find/rn/glutamate
 or 
 http://rest.kegg.jp/find/reaction/glutamate
+
+
+curl http://rest.kegg.jp/find/rn/glutamate | perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /{}/i) { print "$1\n" }  }}' > glutamate.clean.txt
 """
