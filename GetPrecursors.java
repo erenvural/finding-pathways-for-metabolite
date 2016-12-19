@@ -23,7 +23,9 @@ public class GetPrecursors {
 		cursor = args[0].toString();
 		List<String> lines = Files.readAllLines(Paths.get(cursor + ".clean.txt"));
 		for (String line : lines) {
+			/*
 			System.out.print(totalSequenceNumber+1 + "-> ");
+			*/
 			if (line.contains(";")) {
 				mainCompound = (String) line.substring(0, line.indexOf(";"));
 				newSequence = (String) line.substring(line.indexOf(";") + 2, line.length());
@@ -32,15 +34,19 @@ public class GetPrecursors {
 				mainCompound = "Unknown";
 				newSequence = line;
 			}
+			/*
 			System.out.println("Main Compound = " + mainCompound);
 			System.out.println("Full sequence = " + newSequence);
 			System.out.println();
 			System.out.println("All Compounds");
+			*/
 			String[] words = newSequence.split(" \\+ ");
 			for (int i = 0; i < words.length; i++) {
 				words[i] = words[i].trim();
 				if (words[i] != " ") {
+					/*
 					System.out.println(i + 1 + ". " + words[i]);
+					*/
 				}
 
 				if (targetCompunds.contains(words[i])) {
@@ -50,23 +56,31 @@ public class GetPrecursors {
 					targetCompoundNumber++;
 				}
 			}
+			/*
 			System.out.println("----------------------------------------------------------------------------------");
+			*/
 			totalSequenceNumber++;
 		}
 
 		File newFile = new File(cursor + ".precursors.txt");
 		FileWriter myWriter = new FileWriter(newFile);
 		BufferedWriter iWrite = new BufferedWriter(myWriter);
+		/*
 		System.out.println("______________ FINAL RESULTS __________________");
 		System.out.println(cursor + "'s target compounds are below in " + totalSequenceNumber + " total sequence.");
+		*/
 		for (int i = 0; i < targetCompunds.size(); i++) {
+			/*
 			System.out.println(i+1 +") • " + targetCompunds.get(i));
+			*/
 			iWrite.write(targetCompunds.get(i).toString() + "\n");
 			
 		}
 		iWrite.close();
+		/*
 		System.out.println();
 		System.out.println(targetCompoundNumber + " Target Compounds");
 		System.out.println("________________________________________________");
+		*/
 	}
 }
