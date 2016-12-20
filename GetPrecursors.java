@@ -1,4 +1,4 @@
-// package com.bio.project;
+package com.bio.project;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -6,81 +6,45 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;	
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
-public class GetPrecursors {
+public class FindTerm {
 
 	public static String cursor;
-	public static int totalSequenceNumber = 0, targetCompoundNumber = 0;
 	public static String mainCompound;
 	public static String newSequence;
-	public static ArrayList<String> targetCompunds = new ArrayList<String>();
+	public static Set<String> targetCompunds = new TreeSet<String>();
+	public static Object[] targetArray;
 
 	public static void main(String[] args) throws IOException {
 
-		//cursor = "glutamate";
-		cursor = args[0].toString();
-		List<String> lines = Files.readAllLines(Paths.get(cursor + ".clean.txt"));
+		cursor = "glutamate";
+		// cursor = args[0].toString();
+		List<String> lines = Files.readAllLines(Paths.get("C:\\Users\\eren\\Desktop\\File\\" + cursor + ".clean.txt"));
 		for (String line : lines) {
-			/*
-			System.out.print(totalSequenceNumber+1 + "-> ");
-			*/
 			if (line.contains(";")) {
 				mainCompound = (String) line.substring(0, line.indexOf(";"));
 				newSequence = (String) line.substring(line.indexOf(";") + 2, line.length());
-			}
-			else {
+			} else {
 				mainCompound = "Unknown";
 				newSequence = line;
 			}
-			/*
-			System.out.println("Main Compound = " + mainCompound);
-			System.out.println("Full sequence = " + newSequence);
-			System.out.println();
-			System.out.println("All Compounds");
-			*/
 			String[] words = newSequence.split(" \\+ ");
 			for (int i = 0; i < words.length; i++) {
-				words[i] = words[i].trim();
-				if (words[i] != " ") {
-					/*
-					System.out.println(i + 1 + ". " + words[i]);
-					*/
-				}
-
-				if (targetCompunds.contains(words[i])) {
-
-				} else {
-					targetCompunds.add(words[i]);
-					targetCompoundNumber++;
-				}
+				targetCompunds.add(words[i]);
 			}
-			/*
-			System.out.println("----------------------------------------------------------------------------------");
-			*/
-			totalSequenceNumber++;
 		}
-
-		File newFile = new File(cursor + ".precursors.txt");
+		File newFile = new File("C:\\Users\\eren\\Desktop\\File\\" + cursor + ".precusors.txt");
 		FileWriter myWriter = new FileWriter(newFile);
 		BufferedWriter iWrite = new BufferedWriter(myWriter);
-		/*
-		System.out.println("______________ FINAL RESULTS __________________");
-		System.out.println(cursor + "'s target compounds are below in " + totalSequenceNumber + " total sequence.");
-		*/
-		for (int i = 0; i < targetCompunds.size(); i++) {
-			/*
-			System.out.println(i+1 +") • " + targetCompunds.get(i));
-			*/
-			iWrite.write(targetCompunds.get(i).toString() + "\n");
-			
+		// System.out.println("______________ FINAL RESULTS __________________");
+		targetArray = targetCompunds.toArray();
+		for (Object t : targetArray) {
+			iWrite.write(t.toString() + "\n");
 		}
+		// iWrite.write(targetCompunds.size()+" target compounds !");
 		iWrite.close();
-		/*
-		System.out.println();
-		System.out.println(targetCompoundNumber + " Target Compounds");
-		System.out.println("________________________________________________");
-		*/
 	}
 }
