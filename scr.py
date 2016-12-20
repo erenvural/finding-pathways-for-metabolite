@@ -3,7 +3,7 @@ import os, sys, re, json, urllib2
 import xml.etree.ElementTree as ET
 
 # Environment variable
-__JAVA_HOME__ = "/opt/java/jdk1.8.0_111/bin/"
+__JAVA_HOME__ = "/opt/java/jdk1.8.0_101/bin/"
 
 import getopt ##
 import sys    ##
@@ -54,7 +54,7 @@ def getSynonyms(c_id):
 	xml_page = response.read()
 
 	root = ET.fromstring(xml_page)
-	body = root.find("{}Body".format(__XML_IDENTIFIER_FOR_SOAP_ENVELOPE__))
+	body = root.find("{0}Body".format(__XML_IDENTIFIER_FOR_SOAP_ENVELOPE__))
 	getCompleteEntityResponse = body.find("{0}getCompleteEntityResponse".format(__XML_IDENTIFIER_FOR_CHEBI__))
 	for comp in getCompleteEntityResponse.findall("{0}return".format(__XML_IDENTIFIER_FOR_CHEBI__)):
 		compound_name = comp.find("{0}chebiAsciiName".format(__XML_IDENTIFIER_FOR_CHEBI__)).text
@@ -76,13 +76,13 @@ def getPrecursors(metabolite_name):
 	command = """curl http://rest.kegg.jp/find/rn/%s | perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /%s/i) { print "$1\\n" }  }}' > %s.clean.txt""" % (metabolite_name, metabolite_name, metabolite_name)
 	os.system(command)
 
-	os.system("{0}javac {}.java".format(__JAVA_HOME__, __GETPRECURSOR_JAVA__)) # to compile the script for GetPrecursors
+	os.system("{0}javac {1}.java".format(__JAVA_HOME__, __GETPRECURSOR_JAVA__)) # to compile the script for GetPrecursors
 	command = "{0}java {1} {2}".format(__JAVA_HOME__, __GETPRECURSOR_JAVA__, metabolite_name)
 	os.system(command)
 	"""# os.system("mkdir temp")
 	# os.system("rm -rf temp")
 	"""
-	precursors_fc = open("{}.precursors.txt".format(metabolite_name), "r").readlines()
+	precursors_fc = open("{0}.precursors.txt".format(metabolite_name), "r").readlines()
 
 	return [precursor.replace("\n", "") for precursor in precursors_fc]
 
@@ -90,11 +90,12 @@ def getPrecursors(metabolite_name):
 def parseCheBI():
 	pass
 
+
 def parsePrecursor():
 	pass
 
-metabolite_name = "aspirin"
-# metabolite_name = sys.ARGV[1]
+# metabolite_name = "aspirin"
+metabolite_name = sys.argv[1]
 
 compound_id_list = getCompounds(metabolite_name)
 
@@ -109,6 +110,12 @@ for c_id in compound_id_list:
 	# compound['precursors'] = [getPrecursors(c) for c in synonyms_list]]
 
 	result[metabolite_name].append(compound)
+
+
+
+
+# def main(metabolite_name, **inc_synonyms=True, **inc_precursors=True):
+# main(metabolite_name)
 
 """
 with open(metabolite_name + '.json', 'w') as fp:

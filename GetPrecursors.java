@@ -1,4 +1,4 @@
-package com.bio.project;
+//package com.bio.project;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class FindTerm {
+public class GetPrecursors {
 
 	public static String cursor;
 	public static String mainCompound;
@@ -20,9 +20,9 @@ public class FindTerm {
 
 	public static void main(String[] args) throws IOException {
 
-		cursor = "glutamate";
-		// cursor = args[0].toString();
-		List<String> lines = Files.readAllLines(Paths.get("C:\\Users\\eren\\Desktop\\File\\" + cursor + ".clean.txt"));
+		// cursor = "glutamate";
+		cursor = args[0].toString();
+		List<String> lines = Files.readAllLines(Paths.get(cursor + ".clean.txt"));
 		for (String line : lines) {
 			if (line.contains(";")) {
 				mainCompound = (String) line.substring(0, line.indexOf(";"));
@@ -36,7 +36,7 @@ public class FindTerm {
 				targetCompunds.add(words[i]);
 			}
 		}
-		File newFile = new File("C:\\Users\\eren\\Desktop\\File\\" + cursor + ".precusors.txt");
+		File newFile = new File(cursor + ".precursors.txt");
 		FileWriter myWriter = new FileWriter(newFile);
 		BufferedWriter iWrite = new BufferedWriter(myWriter);
 		// System.out.println("______________ FINAL RESULTS __________________");
