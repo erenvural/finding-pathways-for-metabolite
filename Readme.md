@@ -49,8 +49,22 @@ exist?
 ## Questions:
 - to prune we need a list which contains: `CO2`, `H2O`: use Frequency to detect those words (stopwords detecting like method). 
 
+## Usage:
+- to most common run (include metabolite name, synonyms and precursors):
 
+	``` ./scr.py $metabolite_name ```
+	or
+	``` ./scr.py $metabolite_name -msp ```
 
+- to only search for metabolite name (exclude synonyms, precursors):
+
+	``` ./scr.py $metabolite name -m ```
+
+- to only search for metabolite name and synonyms (exclude precursors):
+
+	``` ./scr.py $metabolite name -ms ```
+---
+---
 ```
 perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /glutamate/i) { print "$1\n" }  }}' < glutamate | wc
 
@@ -59,6 +73,8 @@ http://rest.kegg.jp/find/pathway/glutamate
 
 http://www.kegg.jp/kegg-bin/search_pathway_text?map=map&keyword=map00250&mode=1&viewImage=true
 ```
+---
+---
 ### The requierement for Presentation:
 
 #### 1. Describe your problem/research question.
