@@ -64,6 +64,7 @@ exist?
 - to only search for metabolite name and synonyms (exclude precursors):
 
 	``` ./scr.py $metabolite name -ms ```
+	
 ---
 ---
 #### Helper Command
@@ -106,3 +107,6 @@ __Question__: Given a metabolite can you find the pathways/network it and its im
 #### 5. Run a demo with a described example scenario
 
 #### 6.  Provide pointers to source code (GitHub/Attassian BitBucket/Zip file etc.)
+
+#### 7. Presentation
+* link : https://prezi.com/mhq98qbpnz5_/finding-pathways-for-metabolite/
