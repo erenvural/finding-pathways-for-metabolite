@@ -12,7 +12,6 @@ exist?
 - Getting search result for metabolite from CheBI:
 	* for first search: "https://www.ebi.ac.uk/chebi/advancedSearchFT.do?queryBean.stars=2&searchString=aspirin"
 
-
 - Getting synonyms for every search result from CheBI and store the synonyms in a file called `metabolite_name.json` (e.g: _`aspirin.json`_):
 	* for metabolite details: "https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:15365"
 	* for metabolite synonyms: "https://www.ebi.ac.uk/webservices/chebi/2.0/test/getCompleteEntity?chebiId=15365"
@@ -34,20 +33,22 @@ exist?
 	}
 	```
 
-
 - For All keywords (metabolite & synonyms) we search for reactions from KEGG Reactions.(We prune the data which contains the keyword within right side)
 	* Link (glutamate)=> http://www.kegg.jp/dbget-bin/www_bfind_sub?dbkey=reaction&keywords=glutamate&mode=bfind&max_hit=nolimit
 	* Restfull API: "http://rest.kegg.jp/find/rn/glutamate" or "http://rest.kegg.jp/find/reaction/glutamate": it gives us a flat file.
-	* The following command get the left side part of the <=>. Edit for metabolite and synonyms to getting better results.
-	```perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){print "$1\n"}}' < glutamate.txt```
-
 
 - For Pathway we search trough the Reactome Pathway, KEGG Pathway, Wikipathway, and return the result set.
 	* Link (aspirin) => http://www.reactome.org/content/query?q=aspirin&species=Homo+sapiens&species=Entries+without+species&types=Pathway&cluster=true
 
 
 ## Questions:
-- to prune we need a list which contains: `CO2`, `H2O`: use Frequency to detect those words (stopwords detecting like method). 
+- to prune we need a list which contains: `CO2`, `H2O`: use Frequency to detect those words (stopwords detecting like method).
+
+## Dependicies:
+-	curl 7.47.0
+- Python2.7
+- Java (JDK path must be given at line 6)(Tried with jdk1.8.0_101)
+- Perl 5.22
 
 ## Usage:
 - to most common run (include metabolite name, synonyms and precursors):
@@ -65,13 +66,9 @@ exist?
 	``` ./scr.py $metabolite name -ms ```
 ---
 ---
+#### Helper Command
 ```
-perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /glutamate/i) { print "$1\n" }  }}' < glutamate | wc
-
-http://rest.kegg.jp/find/pathway/glutamate
-
-
-http://www.kegg.jp/kegg-bin/search_pathway_text?map=map&keyword=map00250&mode=1&viewImage=true
+curl http://rest.kegg.jp/find/rn/glutamate | perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /{}/i) { print "$1\n" }  }}' > glutamate.clean.txt
 ```
 ---
 ---
@@ -106,6 +103,6 @@ __Question__: Given a metabolite can you find the pathways/network it and its im
 
 #### 4. Provide example codes and scripts and describe how you organized them.
 
-#### 5. Run a demo with a described example scenario 
+#### 5. Run a demo with a described example scenario
 
 #### 6.  Provide pointers to source code (GitHub/Attassian BitBucket/Zip file etc.)

@@ -1,30 +1,9 @@
 #!/usr/bin/python
-import os, sys, re, json, urllib2
+import os, sys, re, json, urllib2, getopt
 import xml.etree.ElementTree as ET
 
 # Environment variable
 __JAVA_HOME__ = "/opt/java/jdk1.8.0_101/bin/"
-
-import getopt ##
-import sys    ##
-import os, re, json, urllib2
-import xml.etree.ElementTree as ET
-
-metabolite_name = ""
-SEARCH_URL = ""
-
-sys_args = sys.argv[2:]
-print sys.argv[1]
-# options, remainder = getopt.getopt(sys_args, 'o:v', ['metabolite=',
-# 														 'url='])
-
-for opt in sys_args:
-    if opt in ('-met', '--metabolite'):
-		print "asdsad"
-    elif opt in ('-u', '--url'):
-        SEARCH_URL = arg
-
-SEARCH_URL = "https://www.ebi.ac.uk/chebi/advancedSearchFT.do?queryBean.stars=2&searchString="
 
 __GETPRECURSOR_JAVA__ = "GetPrecursors"
 
@@ -112,22 +91,41 @@ for c_id in compound_id_list:
 	result[metabolite_name].append(compound)
 
 
-
-
-# def main(metabolite_name, **inc_synonyms=True, **inc_precursors=True):
-# main(metabolite_name)
-
 """
 with open(metabolite_name + '.json', 'w') as fp:
 		json.dump(result, fp, indent=4)
 """
 
 """
-http://rest.kegg.jp/find/rn/glutamate
-or
-http://rest.kegg.jp/find/reaction/glutamate
+metabolite_name = sys.argv[1]
+inc_syn = True
+inc_prec = True
+if len(sys.argv) > 2:
+	sys_args = sys.argv[2]
+	combinations = ['','-msp', '-mps', '-smp', '-spm', '-pms', '-psm']
+	if sys_args in combinations:
+		inc_syn = True
+		inc_prec = True
+	elif sys_args in ('-ms', '-sm', '-s'):
+		inc_prec = False
+	elif sys_args in ('-mp', '-pm', '-p'):
+		inc_syn = False
+	elif sys_args == '-m':
+		inc_syn = False
+		inc_prec = False
+	else:
+		raise Exception("please try again with right parameters")
 
+def main(metabolite_name, **kwargs):
 
+	if kwargs['inc_precursors'] and not kwargs['inc_synonyms']:
+		print "pathway function will call with precursors"
+	elif kwargs['inc_synonyms'] and not kwargs['inc_precursors']:
+		print "pathway function will call with synonyms"
+    elif kwargs['inc_precursors'] and kwargs['inc_synonyms']:
+        print "pathway function will call synonyms and with precursors"
+    else:
+        print "pathway function will call with metabolite and its compound"
 
-curl http://rest.kegg.jp/find/rn/glutamate | perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /{}/i) { print "$1\n" }  }}' > glutamate.clean.txt
+main(metabolite_name, inc_synonyms=inc_syn , inc_precursors=inc_prec)
 """
