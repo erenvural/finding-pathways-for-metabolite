@@ -100,7 +100,8 @@ __Question__: Given a metabolite can you find the pathways/network it and its im
 
 	| METABOLITE_NAME		| Metabolite(M)/Synonyms(S)/Precursor(P)		| PATHWAYS 		        |
 	|-----------------------|-----------------------------------------------|-----------------------|
-	| Aspirin 				| M 											| URL(wikipathways/asd) |
+	| Aspirin 				| M(aspirin)									| URL(wikipathways/asd) |
+	| Aspirin 				| S(Acetylsalicylate)							| URL(wikipathways/asd) |
 
 #### 4. Provide example codes and scripts and describe how you organized them.
 
