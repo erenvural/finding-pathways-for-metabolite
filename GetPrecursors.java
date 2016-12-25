@@ -25,15 +25,19 @@ public class GetPrecursors {
 		List<String> lines = Files.readAllLines(Paths.get(cursor + ".clean.txt"));
 		for (String line : lines) {
 			if (line.contains(";")) {
-				mainCompound = (String) line.substring(0, line.indexOf(";"));
-				newSequence = (String) line.substring(line.indexOf(";") + 2, line.length());
+				mainCompound = (String) line.substring(0, line.lastIndexOf(";"));
+				newSequence = (String) line.substring(line.lastIndexOf(";") + 2, line.length());
 			} else {
 				mainCompound = "Unknown";
 				newSequence = line;
 			}
 			String[] words = newSequence.split(" \\+ ");
 			for (int i = 0; i < words.length; i++) {
-				targetCompunds.add(words[i]);
+				words[i] = words[i].trim();
+				//if (!words[i].contains("H2O") && !words[i].contains("ATP") && !words[i].contains("UDP")
+						//&& !words[i].contains("UTP") && !words[i].contains("CO2")) {
+					targetCompunds.add(words[i]);
+				//}
 			}
 		}
 		File newFile = new File(cursor + ".precursors.txt");
