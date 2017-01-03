@@ -3,7 +3,10 @@ import os, sys, re, json, urllib2, getopt
 import xml.etree.ElementTree as ET
 
 # Environment variable
-__JAVA_HOME__ = "/opt/java/jdk1.8.0_101/bin/"
+with open('script.config', 'r') as fp:
+		CONFIG = json.load(fp)
+
+__JAVA_HOME__ = CONFIG['java_bin']
 
 __GETPRECURSOR_JAVA__ = "GetPrecursors"
 
@@ -32,6 +35,7 @@ def getCompounds(metabolite_name):
 		if m.group(0) not in compound_id_list:
 			compound_id_list.append(m.group(0))
 	return compound_id_list
+
 
 def getSynonyms(c_id):
 	xml_file_url = CHEBI_XML_URL + c_id
@@ -93,6 +97,7 @@ def getPathwaysFromWikiPathways(metabolite_name):
 
 	return wpw_pathways_list
 
+
 def getPathwaysFromReactome(metabolite_name):
 	html_page_url = REACTOME_SEARCH_URL + metabolite_name
 	command = """curl -s "%s" | perl -e '@results = []; while(<>) { if($_ =~ /\<a\shref\=\"\.\/detail\/(.*)\d\"(.*)\<\/a\>/) { $id = $1; $name = $2; $name =~ s/.*\>//; print "$name => $id\n"; } }' """ % html_page_url
@@ -125,7 +130,7 @@ for c_id in compound_id_list:
 		result['reactome'] = getPathwaysFromReactome(metabolite_name)
 		result['wikipathways'] = getPathwaysFromWikiPathways(metabolite_name)
 
-with open(metabolite_name + '.json', 'w') as fp:
+with open('{}.json'.format(metabolite_name), 'w') as fp:
 		json.dump(result, fp, indent=4)
 
 """
@@ -160,4 +165,34 @@ def main(metabolite_name, **kwargs):
         print "pathway function will call with metabolite and its compound"
 
 main(metabolite_name, inc_synonyms=inc_syn , inc_precursors=inc_prec)
+"""
+
+"""
+returned_obj = {
+	'metabolite_name': "glutamate", 
+	'synonyms': [
+                "2-ammoniopentanedioate", 
+                "glutamate", 
+                "glutamate(1-)", 
+                "glutamic acid monoanion"
+            ],
+	'precursors': [
+					{
+						'parent' : {'type': "M", 'name': "glutamate"},
+						'name': "(2S,3S)-3-Methylphenylalanine"
+					},
+					{
+						'parent' : {'type': "S", 'name': "glutamate(1-)"},
+						'name': "(2S,3S)-3-Methylphenylalanine"
+					}
+				],
+	'pathways': [
+					{
+						'parent': {'type': "M/S/P", 'name': "glutamate"},
+						'name': "",
+						'url': "",
+						'source': "Reactome/Wikipathways"
+					}
+			]
+}
 """
