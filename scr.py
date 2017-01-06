@@ -17,6 +17,8 @@ metabolite_name = sys.argv[1]
 with open('{}.json'.format(metabolite_name), 'w') as fp:
 	json.dump(Utils(metabolite_name).result, fp, indent=4)
 
+os.system("python prepare_output.py '{}'".format(metabolite_name))
+
 # print(Utils(metabolite_name).result)
 
 """

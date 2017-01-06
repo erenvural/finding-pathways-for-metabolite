@@ -20,8 +20,6 @@ class Utils:
 	REACTOME_SEARCH_URL = "http://www.reactome.org/content/query?types=Pathway&cluster=true&page=1&q="
 	REACTOME_PATHWAY_URL = "http://reactome.org/PathwayBrowser/#/"
 
-	filter_list = ['H2O', 'CO2', 'ATP', 'UTP']
-
 	def __init__(self, metabolite, synonym=True, precursor=True):
 		self.metabolite = metabolite # came from tsv depends on user parameter
 		self.compound_id = "14321" # came from tsv
@@ -88,23 +86,8 @@ class Utils:
 			# os.system("rm -rf temp")
 		"""
 		precursors_fc = open("{0}.precursors.txt".format(self.metabolite), "r").readlines()
-		"""
-		self.result['precursors'] = []
-		for precursor in precursors_fc:
-			precursor = precursor.replace("\n", "")
-			for filter_term in self.filter_list:
-				if filter_term.find(precursor) != -1:
-					break
-				else:
-					print(precursor, filter_term, precursor.find(filter_term))
-		"""
-		"""
-				if (precursor.find(filter_term) != -1):
-					break
-				elif (precursor.find(filter_term) == -1) and (precursor.replace("\n", "") not in self.result['precursors']):
-					self.result['precursors'].append(precursor.replace("\n", ""))
-		"""
-		self.result['precursors'] = [precursor.replace("\n", "") for precursor in precursors_fc if precursor.count not in self.filter_list]
+		
+		self.result['precursors'] = [precursor.replace("\n", "") for precursor in precursors_fc]
 
 	def get_pathways(self):
 		self.result['pathways'] = { 'reactome': self.get_pathways_from_reactome(self.metabolite), 'wikipathways': self.get_pathways_from_wikipathways(self.metabolite)}

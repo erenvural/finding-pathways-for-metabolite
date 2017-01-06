@@ -17,6 +17,7 @@ public class GetPrecursors {
 	public static String newSequence;
 	public static Set<String> targetCompunds = new TreeSet<String>();
 	public static Object[] targetArray;
+	public static String[] filterList = { "H2O", "CO2", "ATP", "UTP" };
 
 	public static void main(String[] args) throws IOException {
 
@@ -34,10 +35,12 @@ public class GetPrecursors {
 			String[] words = newSequence.split(" \\+ ");
 			for (int i = 0; i < words.length; i++) {
 				words[i] = words[i].trim();
-				//if (!words[i].contains("H2O") && !words[i].contains("ATP") && !words[i].contains("UDP")
-						//&& !words[i].contains("UTP") && !words[i].contains("CO2")) {
-					targetCompunds.add(words[i]);
-				//}
+				for (String filterTerm: filterList) {
+					if (!words[i].contains(filterTerm)) {
+						targetCompunds.add(words[i]);
+					}	
+				}
+				
 			}
 		}
 		File newFile = new File(cursor + ".precursors.txt");
