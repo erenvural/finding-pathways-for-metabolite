@@ -1,3 +1,8 @@
 *.class
 *.txt
 *.pyc
+*.html
+*.json
+*.tsv
+
+output

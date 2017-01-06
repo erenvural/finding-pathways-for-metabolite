@@ -15,13 +15,13 @@ HTML_TEMPLATE = """<html lang="en">
 	<title>Search Results for: {0}</title>
 
 	<!-- Latest compiled and minified CSS -->
-	<link rel="stylesheet" href="assets/bootstrap.min.css"/>
+	<link rel="stylesheet" href="../assets/bootstrap.min.css"/>
 
 	<!-- Latest compiled and minified JavaScript -->
-	<script src="assets/bootstrap.min.js"></script>
+	<script src="../assets/bootstrap.min.js"></script>
 
 	<!-- Our stylesheet file -->
-	<link rel="stylesheet" href="assets/style.css"/>
+	<link rel="stylesheet" href="../assets/style.css"/>
 </head>
 <body>
 <div class="container">
@@ -51,7 +51,7 @@ HTML_TEMPLATE = """<html lang="en">
 </html>
 """
 
-with open(metabolite_name + '.json', 'r') as fp:
+with open('output/{}.json'.format(metabolite_name), 'r') as fp:
 		result = json.load(fp)
 
 inner_html = ""
@@ -74,7 +74,7 @@ for pathway_scr in result['pathways'].keys():
 # print(HTML_TEMPLATE.format(metabolite_name, inner_html))
 
 
-with open('{}.html'.format(metabolite_name), 'w') as fp:
+with open('output/{}.html'.format(metabolite_name), 'w') as fp:
 		fp.write(HTML_TEMPLATE.format(metabolite_name, inner_html))
 
-webbrowser.open("{}.html".format(metabolite_name))
+webbrowser.open("output/{}.html".format(metabolite_name))

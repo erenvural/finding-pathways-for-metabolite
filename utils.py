@@ -22,22 +22,21 @@ class Utils:
 
 	def __init__(self, metabolite, synonym=True, precursor=True):
 		self.metabolite = metabolite # came from tsv depends on user parameter
-		self.compound_id = "14321" # came from tsv
+		self.compound_id = self.get_compound_id(self.metabolite) # came from tsv
 		self.result = {'name': self.metabolite, 'chebiID': self.compound_id}
 		if synonym:
 			self.get_synonyms()
 		if precursor:
 			self.get_precursors()
 		self.get_pathways()
-		# print self.get_compound_id(self.metabolite)
 
 	def get_compound_id(self, search_for):
-		result = []
-		with open("names.tsv") as tsvfile:
+		result = ""
+		with open(self.CONFIG['names_tsv']) as tsvfile:
 			tsvreader = csv.reader(tsvfile, delimiter="\t")
 			for row in tsvreader:
-				if (row[4].lower() == search_for):
-					result.append(row[1])
+				if (row[4].lower() == search_for) and (row[2] == "NAME"):
+					result = row[1]
 
 		return result
 
@@ -74,7 +73,7 @@ class Utils:
 
 	def get_precursors(self):
 		# return
-		command = """curl -s http://rest.kegg.jp/find/rn/%s | perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /%s/i) { print "$1\\n" }  }}' > %s.clean.txt""" % (self.metabolite, self.metabolite, self.metabolite)
+		command = """curl -s http://rest.kegg.jp/find/rn/%s | perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /%s/i) { print "$1\\n" }  }}' > output/%s.clean.txt""" % (self.metabolite, self.metabolite, self.metabolite)
 		os.system(command)
 	
 
@@ -85,7 +84,7 @@ class Utils:
 			# os.system("mkdir temp")
 			# os.system("rm -rf temp")
 		"""
-		precursors_fc = open("{0}.precursors.txt".format(self.metabolite), "r").readlines()
+		precursors_fc = open("output/{0}.precursors.txt".format(self.metabolite), "r").readlines()
 		
 		self.result['precursors'] = [precursor.replace("\n", "") for precursor in precursors_fc]
 

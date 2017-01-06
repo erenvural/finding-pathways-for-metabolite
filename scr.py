@@ -2,25 +2,36 @@
 import os, sys, re, json, urllib2, getopt
 from utils import Utils
 
-# Environment variable
+# Config
 with open('script.config', 'r') as fp:
-		CONFIG = json.load(fp)
+	CONFIG = json.load(fp)
 
-__JAVA_HOME__ = CONFIG['java_bin']
+# Init script
+for initial_path in ["output", "resource"]:
+	if not os.path.exists(initial_path):
+		os.makedirs(initial_path)
 
-__GETPRECURSOR_JAVA__ = "GetPrecursors"
+if not os.path.exists("resource/names.tsv"):
+	print("Cannot find the names.tsv. We will download for you.")
+	command = """cd resource && wget {} -O names.tsv.gz && gzip -d names.tsv.gz && cd ..""".format(CONFIG['names_tsv_url'])
+	os.system(command)
+	if os.path.exists("resource/names.tsv"):
+		print("We get the file.")
+	else:
+		print("We cannot get the file.")
+		sys.exit(1)
 
 # metabolite_name = "aspirin"
 metabolite_name = sys.argv[1]
 
-
-with open('{}.json'.format(metabolite_name), 'w') as fp:
+with open('output/{}.json'.format(metabolite_name), 'w') as fp:
 	json.dump(Utils(metabolite_name).result, fp, indent=4)
 
 os.system("python prepare_output.py '{}'".format(metabolite_name))
 
-# print(Utils(metabolite_name).result)
 
+# clean unnecessary files
+os.system("rm -rf output/*.txt")
 """
 metabolite_name = sys.argv[1]
 inc_syn = True
