@@ -1,3 +1,4 @@
+#!-*- coding: utf-8 -*-
 import urllib2, json, os, csv
 import xml.etree.ElementTree as ET
 
@@ -27,7 +28,10 @@ class Utils:
 		if synonym:
 			self.get_synonyms()
 		if precursor:
-			self.get_precursors()
+			if synonym:
+				self.get_precursors([self.metabolite] + self.result['synonyms'])
+			else:
+				self.get_precursors([self.metabolite])
 		self.get_pathways()
 
 	def get_compound_id(self, search_for):
@@ -71,22 +75,68 @@ class Utils:
 			"""
 			self.result['synonyms'] = synonyms_list
 
-	def get_precursors(self):
-		# return
-		command = """curl -s http://rest.kegg.jp/find/rn/%s | perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /%s/i) { print "$1\\n" }  }}' > output/%s.clean.txt""" % (self.metabolite, self.metabolite, self.metabolite)
-		os.system(command)
-	
+	def get_precursors(self, search_list):
+		print(search_list)
+		result = []
+		for (i, search_term) in enumerate(search_list):
+			print(i, search_term)
+			command = """curl -s http://rest.kegg.jp/find/rn/%s | perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /%s/i) { print "$1\\n" }  }}' > output/%s.clean.txt""" % (search_term, search_term, search_term)
+			os.system(command)
 
-		os.system("{0}javac {1}.java".format(self.__JAVA_HOME__, self.__GETPRECURSOR_JAVA__)) # to compile the script for GetPrecursors
-		command = "{0}java {1} {2}".format(self.__JAVA_HOME__, self.__GETPRECURSOR_JAVA__, self.metabolite)
-		os.system(command)
-		"""
-			# os.system("mkdir temp")
-			# os.system("rm -rf temp")
-		"""
-		precursors_fc = open("output/{0}.precursors.txt".format(self.metabolite), "r").readlines()
+			os.system("{0}javac {1}.java".format(self.__JAVA_HOME__, self.__GETPRECURSOR_JAVA__)) # to compile the script for GetPrecursors
+			command = "{0}java {1} '{2}'".format(self.__JAVA_HOME__, self.__GETPRECURSOR_JAVA__, search_term)
+			os.system(command)
+
+			precursors_fc = open("output/{0}.precursors.txt".format(self.metabolite), "r").readlines()
+			print(precursors_fc)
+
+			if i == 0: # Metabolite itself
+				for prec in precursors_fc:
+					precursor = {
+						'parent': {'type': "M", 'name': search_term},
+						'name': prec
+						}
+					result.append(precursor)
+					print(precursor)
+			else:
+				for prec in precursors_fc:
+					precursor = {
+						'parent': {'type': "S", 'name': search_term},
+						'name': prec
+						}
+					result.append(precursor)
+		'''
+        for (i, search_term) in enumerate(search_list):
+			# return
+			command = """curl -s http://rest.kegg.jp/find/rn/%s | perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /%s/i) { print "$1\\n" }  }}' > output/%s.clean.txt""" % (search_term, search_term, search_term)
+			os.system(command)
 		
-		self.result['precursors'] = [precursor.replace("\n", "") for precursor in precursors_fc]
+
+			os.system("{0}javac {1}.java".format(self.__JAVA_HOME__, self.__GETPRECURSOR_JAVA__)) # to compile the script for GetPrecursors
+			command = "{0}java {1} '{2}'".format(self.__JAVA_HOME__, self.__GETPRECURSOR_JAVA__, search_term)
+			os.system(command)
+			"""
+				# os.system("mkdir temp")
+				# os.system("rm -rf temp")
+			"""
+			precursors_fc = open("output/{0}.precursors.txt".format(self.metabolite), "r").readlines()
+
+			if i == 0: # Metabolite itself
+				for prec in precursors_fc:
+					precursor = {
+						'parent': {'type': "M", 'name': search_term},
+						'name': prec
+						}
+					result.append(precursor)
+			else:
+				for prec in precursors_fc:
+					precursor = {
+						'parent': {'type': "S", 'name': search_term},
+						'name': prec
+						}
+					result.append(precursor)
+		'''
+		print(result)
 
 	def get_pathways(self):
 		self.result['pathways'] = { 'reactome': self.get_pathways_from_reactome(self.metabolite), 'wikipathways': self.get_pathways_from_wikipathways(self.metabolite)}

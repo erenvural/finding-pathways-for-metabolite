@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.net.URLDecoder;
 
 public class GetPrecursors {
 
@@ -23,7 +24,9 @@ public class GetPrecursors {
 
 		// cursor = "glutamate";
 		cursor = args[0].toString();
-		List<String> lines = Files.readAllLines(Paths.get("output/" + cursor + ".clean.txt"));
+		String path = "output/" + cursor + ".clean.txt";
+		String decodedPath = URLDecoder.decode(path);
+		List<String> lines = Files.readAllLines(Paths.get(decodedPath));
 		for (String line : lines) {
 			if (line.contains(";")) {
 				mainCompound = (String) line.substring(0, line.lastIndexOf(";"));
@@ -43,7 +46,9 @@ public class GetPrecursors {
 				
 			}
 		}
-		File newFile = new File("output/" + cursor + ".precursors.txt");
+		path = "output/" + cursor + ".precursors.txt";
+		decodedPath = URLDecoder.decode(path);
+		File newFile = new File(decodedPath);
 		FileWriter myWriter = new FileWriter(newFile);
 		BufferedWriter iWrite = new BufferedWriter(myWriter);
 		// System.out.println("______________ FINAL RESULTS __________________");
