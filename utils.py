@@ -97,7 +97,7 @@ class Utils:
 				if delete_prec.find(search_term) =! -1:
 					flag = True
 
-			if flag:
+			if not flag:
 				if i == 0: # Metabolite itself
 					for prec in precursors_fc:
 						precursor = {
