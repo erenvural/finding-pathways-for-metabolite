@@ -21,10 +21,10 @@ class Utils:
 	TSV_FILE = CONFIG['names_tsv']
 	
 	COMMON_PRECURSORS = ["ATP", "H2O", 'CO2', 'CO']
-	
+
 	__XML_IDENTIFIER_FOR_CHEBI__ = "{http://www.ebi.ac.uk/webservices/chebi}" # self.__XML_IDENTIFIER_FOR_CHEBI__
 	__XML_IDENTIFIER_FOR_SOAP_ENVELOPE__ = "{http://schemas.xmlsoap.org/soap/envelope/}"
-	
+
 	# SEARCH_URL = "https://www.ebi.ac.uk/chebi/advancedSearchFT.do?queryBean.stars=2&searchString="
 	COMPOUND_URL = "https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:"
 	CHEBI_XML_URL = "https://www.ebi.ac.uk/webservices/chebi/2.0/test/getCompleteEntity?chebiId="
@@ -82,7 +82,7 @@ class Utils:
 			compound_name = comp.find("{0}chebiAsciiName".format(self.__XML_IDENTIFIER_FOR_CHEBI__)).text
 			synonyms = comp.findall("{0}Synonyms".format(self.__XML_IDENTIFIER_FOR_CHEBI__))
 			synonyms_list = []
-			
+
 			for syn in synonyms:
 				synonym_name = syn.find("{0}data".format(self.__XML_IDENTIFIER_FOR_CHEBI__)).text
 				if synonym_name != self.metabolite:
@@ -93,16 +93,18 @@ class Utils:
 
 	def get_precursors(self, search_list):
 		# print(search_list)
+		delete_list = [H2O, ATP, UTP]
 		result = []
 		for (i, search_term) in enumerate(search_list):
 			# print(i, search_term)
 			print("Getting Precursors for: " + search_term)
 
 			reaction_url = self.KEGG_REACTION_URL + search_term 
+
 			print("HTTP Request for: " + reaction_url)
 			command = """curl -s "%s" | perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /%s/i) { print "$1\n" }  }}' """ % (reaction_url, search_term)
 			precursors_candidates = os.popen(command).read()
-			
+
 			precursors_fc = self.get_precursor_list(precursors_candidates)
 			print("# of precursors found for {}: {}".format(search_term, len(precursors_fc)))
 
@@ -122,9 +124,10 @@ class Utils:
 							'name': prec
 							}
 						result.append(precursor)
+
 		# print(result)
-		self.result['precursors'] = result[:3] # for debug uncomment this and comment the previous line
-		# self.result['precursors'] = result
+		# self.result['precursors'] = result[:3] # for debug uncomment this and comment the previous line
+		self.result['precursors'] = result
 		print("Getting Precursors done")
 
 
@@ -205,6 +208,3 @@ class Utils:
 			wpw_pathways_list.append(pathway)
 
 		return wpw_pathways_list
-
-
-	

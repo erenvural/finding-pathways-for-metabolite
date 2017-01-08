@@ -43,6 +43,8 @@ if len(sys.argv) > 2:
 		inc_prec = False
 	else:
 		raise Exception("please try again with right parameters")
+	if sys_args == "--download-tsv":
+		down_tsv = True
 
 if len(sys.argv) > 3:
 	sys_args = sys.argv[3]
