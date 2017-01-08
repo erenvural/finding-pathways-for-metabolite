@@ -93,7 +93,6 @@ class Utils:
 
 	def get_precursors(self, search_list):
 		# print(search_list)
-		delete_list = [H2O, ATP, UTP]
 		result = []
 		for (i, search_term) in enumerate(search_list):
 			# print(i, search_term)
@@ -157,20 +156,20 @@ class Utils:
 				for pathway in self.get_pathways_from_reactome(search_term, parent):
 						result['reactome'].append(pathway)
 				for pathway in self.get_pathways_from_wikipathways(search_term, parent):
-						result['reactome'].append(pathway)
+						result['wikipathways'].append(pathway)
 			else:
 				if type(search_term) == str: # synonyms
 					parent = { 'type': "S", 'name': search_term }
 					for pathway in self.get_pathways_from_reactome(search_term, parent):
 						result['reactome'].append(pathway)
 					for pathway in self.get_pathways_from_wikipathways(search_term, parent):
-						result['reactome'].append(pathway)
+						result['wikipathways'].append(pathway)
 				elif type(search_term) == dict: # precursors
 					parent = search_term
 					for pathway in self.get_pathways_from_reactome(search_term['name'], parent):
 						result['reactome'].append(pathway)
 					for pathway in self.get_pathways_from_wikipathways(search_term['name'], parent):
-						result['reactome'].append(pathway)
+						result['wikipathways'].append(pathway)
 				else:
 					print(self.bcolors.FAIL + "Someting went wrong while getting pathways" + self.bcolors.ENDC)
 					sys.exit(1)

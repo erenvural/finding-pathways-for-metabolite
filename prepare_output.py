@@ -31,9 +31,9 @@ HTML_TEMPLATE = """<html lang="en">
 			<thead>
 				<tr>
 					<th>#</th>
-					<th>Matching Type (Metabolite/Synonym/Precursor)</th>
-					<th>Match with</th>
-					<th>Pathway</th>
+					<th>Matching Type:With (M/S/P)</th>
+					<th>Pathway Name</th>
+					<th>Pathway URL</th>
 				</tr>
 			</thead>
 			<tbody>
