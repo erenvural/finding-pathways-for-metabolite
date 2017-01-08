@@ -1,5 +1,5 @@
 #!-*- coding: utf-8 -*-
-import urllib2, json, os, csv
+import os, sys, urllib2, json, csv
 import xml.etree.ElementTree as ET
 
 
@@ -17,7 +17,8 @@ class Utils:
 
 	with open('script.config', 'r') as fp:
 		CONFIG = json.load(fp)
-	__JAVA_HOME__ = CONFIG['java_bin']
+
+	TSV_FILE = CONFIG['names_tsv']
 	
 	COMMON_PRECURSORS = ["ATP", "H2O", 'CO2', 'CO']
 	
@@ -36,18 +37,31 @@ class Utils:
 		self.metabolite = metabolite # came from tsv depends on user parameter
 		self.compound_id = self.get_compound_id(self.metabolite) # came from tsv
 		self.result = {'name': self.metabolite, 'chebiID': self.compound_id}
-		if synonym:
+		if synonym and not precursor:
+			print(self.bcolors.OKBLUE + "We will search pathways for: {} and its synonyms (excluding precursors)...".format(metabolite) + self.bcolors.ENDC)
 			self.get_synonyms()
-		if precursor:
-			if synonym:
-				self.get_precursors([self.metabolite] + self.result['synonyms'])
-			else:
-				self.get_precursors([self.metabolite])
-		self.get_pathways()
+			pathway_getting_list = [self.metabolite] + self.result['synonyms']
+		elif synonym and precursor:
+			print(self.bcolors.OKBLUE + "We will search pathways for: {}, its synonyms and its precursors...".format(metabolite) + self.bcolors.ENDC)
+			self.get_synonyms()
+			self.get_precursors([self.metabolite] + self.result['synonyms'])
+			pathway_getting_list = [self.metabolite] + self.result['synonyms'] + self.result['precursors']
+		elif not synonym and precursor:
+			print(self.bcolors.OKBLUE + "We will search pathways for: {} and its precursors (excluding synonyms)...".format(metabolite) + self.bcolors.ENDC)
+			self.get_precursors([self.metabolite])
+			pathway_getting_list = [self.metabolite] + self.result['precursors']
+		elif not synonym and not precursor:
+			print(self.bcolors.OKBLUE + "We will search pathways for: {} (exclude synonyms and precursors)...".format(metabolite) + self.bcolors.ENDC)
+			pathway_getting_list = [self.metabolite]
+		else:
+			print(self.bcolors.FAIL + "Parameters not recognized" + self.bcolors.ENDC)
+			sys.exit(1)
+		self.get_pathways(pathway_getting_list)
+
 
 	def get_compound_id(self, search_for):
 		result = ""
-		with open(self.CONFIG['names_tsv']) as tsvfile:
+		with open(self.TSV_FILE) as tsvfile:
 			tsvreader = csv.reader(tsvfile, delimiter="\t")
 			for row in tsvreader:
 				if (row[4].lower() == search_for) and (row[2] == "NAME"):
@@ -83,7 +97,7 @@ class Utils:
 		for (i, search_term) in enumerate(search_list):
 			# print(i, search_term)
 			print("Getting Precursors for: " + search_term)
-			
+
 			reaction_url = self.KEGG_REACTION_URL + search_term 
 			print("HTTP Request for: " + reaction_url)
 			command = """curl -s "%s" | perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /%s/i) { print "$1\n" }  }}' """ % (reaction_url, search_term)
@@ -94,21 +108,31 @@ class Utils:
 
 			if i == 0: # Metabolite itself
 				for prec in precursors_fc:
-					precursor = {
-						'parent': {'type': "M", 'name': search_term},
-						'name': prec
-						}
-					result.append(precursor)
+					if not self.is_common(prec):
+						precursor = {
+							'parent': {'type': "M", 'name': search_term},
+							'name': prec
+							}
+						result.append(precursor)
 			else:
 				for prec in precursors_fc:
-					precursor = {
-						'parent': {'type': "S", 'name': search_term},
-						'name': prec
-						}
-					result.append(precursor)
+					if not self.is_common(prec):
+						precursor = {
+							'parent': {'type': "S", 'name': search_term},
+							'name': prec
+							}
+						result.append(precursor)
 		# print(result)
+		# self.result['precursors'] = result[:3] # for debug uncomment this and comment the previous line
 		self.result['precursors'] = result
 		print("Getting Precursors done")
+
+
+	def is_common(self, precursor):
+		for c_pre in self.COMMON_PRECURSORS:
+			if precursor.find(c_pre) != -1:
+				return True
+		return False	
 
 	def get_precursor_list(self, precursors_candidates):
 		lines = precursors_candidates.split("\n")
@@ -121,26 +145,53 @@ class Utils:
 					precursors.append(precursor)
 		return precursors
 
-	def get_pathways(self):
-		self.result['pathways'] = { 'reactome': self.get_pathways_from_reactome(self.metabolite), 'wikipathways': self.get_pathways_from_wikipathways(self.metabolite)}
+	def get_pathways(self, search_list):
+		result = {'reactome': [], 'wikipathways': []}
+		for (i, search_term) in enumerate(search_list):
+			print(i, search_term)
+			if i == 0: # metabolite itself
+				parent = { 'type': "M", 'name': search_term }
+				for pathway in self.get_pathways_from_reactome(search_term, parent):
+						result['reactome'].append(pathway)
+				for pathway in self.get_pathways_from_wikipathways(search_term, parent):
+						result['reactome'].append(pathway)
+			else:
+				if type(search_term) == str: # synonyms
+					parent = { 'type': "S", 'name': search_term }
+					for pathway in self.get_pathways_from_reactome(search_term, parent):
+						result['reactome'].append(pathway)
+					for pathway in self.get_pathways_from_wikipathways(search_term, parent):
+						result['reactome'].append(pathway)
+				elif type(search_term) == dict: # precursors
+					parent = search_term
+					for pathway in self.get_pathways_from_reactome(search_term['name'], parent):
+						result['reactome'].append(pathway)
+					for pathway in self.get_pathways_from_wikipathways(search_term['name'], parent):
+						result['reactome'].append(pathway)
+				else:
+					print(self.bcolors.FAIL + "Someting went wrong while getting pathways" + self.bcolors.ENDC)
+					sys.exit(1)
+		# print(result['reactome'])
+		self.result['pathways'] = result
 
-	def get_pathways_from_reactome(self, metabolite_name):
-		html_page_url = self.REACTOME_SEARCH_URL + metabolite_name
+	def get_pathways_from_reactome(self, search_term, parent):
+		html_page_url = self.REACTOME_SEARCH_URL + search_term
 		command = """curl -s "%s" | perl -e '@results = []; while(<>) { if($_ =~ /\<a\shref\=\"\.\/detail\/(.*)\d\"(.*)\<\/a\>/) { $id = $1; $name = $2; $name =~ s/.*\>//; print "$name => $id\n"; } }' """ % html_page_url
 		pw_output = os.popen(command).read()
 		pws = [i for i in pw_output.split("\n") if i != '']
 		reactome_pathway_list = []
 		for p in pws:
-			pathway = {}
+			pathway = {'parent': parent}
 			pathway['name'] = p.split(" => ")[0]
 			pathway['url'] = self.REACTOME_PATHWAY_URL + p.split(" => ")[1]
 			reactome_pathway_list.append(pathway)
 
 		return reactome_pathway_list
 
-	def get_pathways_from_wikipathways(self, metabolite_name):
+	def get_pathways_from_wikipathways(self, search_term, parent):
 		# http://webservice.wikipathways.org/findPathwaysByText?query=glutamate
-		xml_file_url = self.WPW_XML_URL + metabolite_name
+		xml_file_url = self.WPW_XML_URL + search_term
+		print(xml_file_url)
 		req = urllib2.Request(xml_file_url)
 		response = urllib2.urlopen(req)
 		xml_page = response.read()
@@ -150,7 +201,7 @@ class Utils:
 		for result in root:
 			wpw_url = result.find("{0}url".format("{http://www.wikipathways.org/webservice}")).text
 			wpw_name = result.find("{0}name".format("{http://www.wikipathways.org/webservice}")).text
-			pathway = {'name': wpw_name, 'url': wpw_url}
+			pathway = {'parent': parent,'name': wpw_name, 'url': wpw_url}
 			wpw_pathways_list.append(pathway)
 
 		return wpw_pathways_list

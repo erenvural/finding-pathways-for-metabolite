@@ -26,13 +26,13 @@ HTML_TEMPLATE = """<html lang="en">
 <body>
 <div class="container">
 	<h1> Search Result for: {0} </h1>
-	<div class="results table-responsive">
+	<div class="results table-responsive col-md-12">
 		<table class="table table-striped table-condensed table-hover">
 			<thead>
 				<tr>
 					<th>#</th>
 					<th>Matching Type (Metabolite/Synonym/Precursor)</th>
-					<th>Match</th>
+					<th>Match with</th>
 					<th>Pathway</th>
 				</tr>
 			</thead>
@@ -62,14 +62,22 @@ for pathway_scr in result['pathways'].keys():
 				</tr>
 				""".format(pathway_scr.title())
 	for (i, pathway) in enumerate(result['pathways'][pathway_scr]):
+		if 'parent' in pathway['parent'].keys():
+			parent_type = pathway['parent']['parent']['type']
+			parent_name = pathway['parent']['parent']['name']
+			match_type = "P"
+		else:
+			parent_type = pathway['parent']['type']
+			parent_name = pathway['parent']['name']
+			match_type = pathway['parent']['type']
 		inner_html += """
 					<tr>
 						<td>{0}</td>
-						<td>Synonym</td>
+						<td>{3}:{4}</td>
 						<td>{1}</td>
 						<td><a target="_blank" href="{2}">{2}</a></td>
 					</tr>
-					""".format(i+1, pathway['name'], pathway['url'])
+					""".format(i+1, pathway['name'], pathway['url'], match_type, parent_name)
 
 # print(HTML_TEMPLATE.format(metabolite_name, inner_html))
 
