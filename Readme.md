@@ -45,10 +45,9 @@ exist?
 - to prune we need a list which contains: `CO2`, `H2O`: use Frequency to detect those words (stopwords detecting like method).
 
 ## Dependicies:
--	curl 7.47.0
-- Python2.7
-- Java (JDK path must be given at line 6)(Tried with jdk1.8.0_101)
+- Python 2.7
 - Perl 5.22
+- Curl 7.47.0
 
 ## Usage:
 - to most common run (include metabolite name, synonyms and precursors):
@@ -66,48 +65,12 @@ exist?
 	``` ./scr.py $metabolite name -ms ```
 	
 ---
----
-#### Helper Command
-```
-curl http://rest.kegg.jp/find/rn/glutamate | perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /{}/i) { print "$1\n" }  }}' > glutamate.clean.txt
-```
----
----
-### The requierement for Presentation:
+### Presentation
+* link : https://prezi.com/mhq98qbpnz5_/finding-pathways-for-metabolite/
 
-#### 1. Describe your problem/research question.
-
-__Question__: Given a metabolite can you find the pathways/network it and its immediate precursors exist?
-	- Metabolite can be by name, formula, smiles code. (Chebi, PubChem etc. identifier) (Query expansion)
-	- Pathway could be from any database (Wikipathways, Reactome etc.).
-	- Use pathway, reaction, chemical compound/human metabolite databases.
-
-#### 2. List team members and  their roles.
-
+### Team Members
 | Team Members            | Github Accounts                           |
 |-------------------------|-------------------------------------------|
 | Eren VURAL              |[erenvural](https://github.com/erenvural)  |
 | Mahmut KOÇAKER          |[mkocaker06](https://github.com/mkocaker06)|
 | Muhammed Olcay TERCANLI |[molcay](https://github.com/molcay)        |
-
-#### 3. Describe the method employed. Be specific on steps and name of tools/databases.
-* We get the metabolite name from user.
-* We search the metabolite on __CheBI__ and get the results for a metabolite(a query can match with multiple entry on __CheBI__).
-* We visit every matches pages and getting the synonyms for the given metabolite.
-* We search through the __KEGG Reaction__ and getting precursor for the given metabolite and its synonyms.
-* When collection of all synonyms and precursors have done, we search for pathways with metabolite name, synonyms and precursors.
-* As a result we list the pathways from __WikiPathways__, __Reactome__ etc.:
-
-	| METABOLITE_NAME		| Metabolite(M)/Synonyms(S)/Precursor(P)		| PATHWAYS 		        |
-	|-----------------------|-----------------------------------------------|-----------------------|
-	| Aspirin 				| M(aspirin)									| URL(wikipathways/asd) |
-	| Aspirin 				| S(Acetylsalicylate)							| URL(wikipathways/asd) |
-
-#### 4. Provide example codes and scripts and describe how you organized them.
-
-#### 5. Run a demo with a described example scenario
-
-#### 6.  Provide pointers to source code (GitHub/Attassian BitBucket/Zip file etc.)
-
-#### 7. Presentation
-* link : https://prezi.com/mhq98qbpnz5_/finding-pathways-for-metabolite/

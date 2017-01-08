@@ -5,18 +5,29 @@ import xml.etree.ElementTree as ET
 
 class Utils:
 
+	class bcolors: # console print coloring
+		HEADER = '\033[95m'
+		OKBLUE = '\033[94m'
+		OKGREEN = '\033[92m'
+		WARNING = '\033[93m'
+		FAIL = '\033[91m'
+		ENDC = '\033[0m'
+		BOLD = '\033[1m'
+		UNDERLINE = '\033[4m'
+
 	with open('script.config', 'r') as fp:
 		CONFIG = json.load(fp)
 	__JAVA_HOME__ = CONFIG['java_bin']
 	
-	__GETPRECURSOR_JAVA__ = "GetPrecursors"
+	COMMON_PRECURSORS = ["ATP", "H2O", 'CO2', 'CO']
 	
 	__XML_IDENTIFIER_FOR_CHEBI__ = "{http://www.ebi.ac.uk/webservices/chebi}" # self.__XML_IDENTIFIER_FOR_CHEBI__
 	__XML_IDENTIFIER_FOR_SOAP_ENVELOPE__ = "{http://schemas.xmlsoap.org/soap/envelope/}"
 	
-	SEARCH_URL = "https://www.ebi.ac.uk/chebi/advancedSearchFT.do?queryBean.stars=2&searchString="
+	# SEARCH_URL = "https://www.ebi.ac.uk/chebi/advancedSearchFT.do?queryBean.stars=2&searchString="
 	COMPOUND_URL = "https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:"
 	CHEBI_XML_URL = "https://www.ebi.ac.uk/webservices/chebi/2.0/test/getCompleteEntity?chebiId="
+	KEGG_REACTION_URL = "http://rest.kegg.jp/find/rn/"
 	WPW_XML_URL = "http://webservice.wikipathways.org/findPathwaysByText?query="
 	REACTOME_SEARCH_URL = "http://www.reactome.org/content/query?types=Pathway&cluster=true&page=1&q="
 	REACTOME_PATHWAY_URL = "http://reactome.org/PathwayBrowser/#/"
@@ -60,66 +71,26 @@ class Utils:
 			
 			for syn in synonyms:
 				synonym_name = syn.find("{0}data".format(self.__XML_IDENTIFIER_FOR_CHEBI__)).text
-				synonyms_list.append(synonym_name)
+				if synonym_name != self.metabolite:
+					synonyms_list.append(synonym_name)
 		# print(synonyms_list)
-		if self.metabolite.lower() in [s.lower() for s in synonyms_list]:
-			# print(compound_name)
-			"""
-			compound = {
-				'compound_id': self.compound_id,
-				'compound_name': compound_name.replace(" ", ""),
-				'synonyms': synonyms_list
-			}
-			print(compound)
-			return compound
-			"""
-			self.result['synonyms'] = synonyms_list
+		# if self.metabolite.lower() in [s.lower() for s in synonyms_list]:
+		self.result['synonyms'] = synonyms_list
 
 	def get_precursors(self, search_list):
-		print(search_list)
+		# print(search_list)
 		result = []
 		for (i, search_term) in enumerate(search_list):
-			print(i, search_term)
-			command = """curl -s http://rest.kegg.jp/find/rn/%s | perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /%s/i) { print "$1\\n" }  }}' > output/%s.clean.txt""" % (search_term, search_term, search_term)
-			os.system(command)
-
-			os.system("{0}javac {1}.java".format(self.__JAVA_HOME__, self.__GETPRECURSOR_JAVA__)) # to compile the script for GetPrecursors
-			command = "{0}java {1} '{2}'".format(self.__JAVA_HOME__, self.__GETPRECURSOR_JAVA__, search_term)
-			os.system(command)
-
-			precursors_fc = open("output/{0}.precursors.txt".format(self.metabolite), "r").readlines()
-			print(precursors_fc)
-
-			if i == 0: # Metabolite itself
-				for prec in precursors_fc:
-					precursor = {
-						'parent': {'type': "M", 'name': search_term},
-						'name': prec
-						}
-					result.append(precursor)
-					print(precursor)
-			else:
-				for prec in precursors_fc:
-					precursor = {
-						'parent': {'type': "S", 'name': search_term},
-						'name': prec
-						}
-					result.append(precursor)
-		'''
-        for (i, search_term) in enumerate(search_list):
-			# return
-			command = """curl -s http://rest.kegg.jp/find/rn/%s | perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /%s/i) { print "$1\\n" }  }}' > output/%s.clean.txt""" % (search_term, search_term, search_term)
-			os.system(command)
-		
-
-			os.system("{0}javac {1}.java".format(self.__JAVA_HOME__, self.__GETPRECURSOR_JAVA__)) # to compile the script for GetPrecursors
-			command = "{0}java {1} '{2}'".format(self.__JAVA_HOME__, self.__GETPRECURSOR_JAVA__, search_term)
-			os.system(command)
-			"""
-				# os.system("mkdir temp")
-				# os.system("rm -rf temp")
-			"""
-			precursors_fc = open("output/{0}.precursors.txt".format(self.metabolite), "r").readlines()
+			# print(i, search_term)
+			print("Getting Precursors for: " + search_term)
+			
+			reaction_url = self.KEGG_REACTION_URL + search_term 
+			print("HTTP Request for: " + reaction_url)
+			command = """curl -s "%s" | perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /%s/i) { print "$1\n" }  }}' """ % (reaction_url, search_term)
+			precursors_candidates = os.popen(command).read()
+			
+			precursors_fc = self.get_precursor_list(precursors_candidates)
+			print("# of precursors found for {}: {}".format(search_term, len(precursors_fc)))
 
 			if i == 0: # Metabolite itself
 				for prec in precursors_fc:
@@ -135,8 +106,20 @@ class Utils:
 						'name': prec
 						}
 					result.append(precursor)
-		'''
-		print(result)
+		# print(result)
+		self.result['precursors'] = result
+		print("Getting Precursors done")
+
+	def get_precursor_list(self, precursors_candidates):
+		lines = precursors_candidates.split("\n")
+		precursors = []
+		for line in lines:
+			if (line.find(";") != -1):
+				line = line[(line.find(";") + 2):]
+			for precursor in [f.strip() for f in line.split(" + ") if f != ""]:
+				if precursor not in precursors:
+					precursors.append(precursor)
+		return precursors
 
 	def get_pathways(self):
 		self.result['pathways'] = { 'reactome': self.get_pathways_from_reactome(self.metabolite), 'wikipathways': self.get_pathways_from_wikipathways(self.metabolite)}
