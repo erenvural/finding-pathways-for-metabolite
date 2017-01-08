@@ -28,7 +28,7 @@ inc_syn = True
 inc_prec = True
 if len(sys.argv) > 2:
 	sys_args = sys.argv[2]
-	combinations = ['','-msp', '-mps', '-smp', '-spm', '-pms', '-psm']
+	combinations = ['','-msp', '-mps', '-smp', '-spm', '-pms', '-psm', '-sp', '-ps']
 	if sys_args in combinations or sys_args == "--download-tsv":
 		inc_syn = True
 		inc_prec = True

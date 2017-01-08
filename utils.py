@@ -123,8 +123,8 @@ class Utils:
 							}
 						result.append(precursor)
 		# print(result)
-		# self.result['precursors'] = result[:3] # for debug uncomment this and comment the previous line
-		self.result['precursors'] = result
+		self.result['precursors'] = result[:3] # for debug uncomment this and comment the previous line
+		# self.result['precursors'] = result
 		print("Getting Precursors done")
 
 
@@ -148,7 +148,7 @@ class Utils:
 	def get_pathways(self, search_list):
 		result = {'reactome': [], 'wikipathways': []}
 		for (i, search_term) in enumerate(search_list):
-			print(i, search_term)
+			# print(i, search_term)
 			if i == 0: # metabolite itself
 				parent = { 'type': "M", 'name': search_term }
 				for pathway in self.get_pathways_from_reactome(search_term, parent):
@@ -191,7 +191,7 @@ class Utils:
 	def get_pathways_from_wikipathways(self, search_term, parent):
 		# http://webservice.wikipathways.org/findPathwaysByText?query=glutamate
 		xml_file_url = self.WPW_XML_URL + search_term
-		print(xml_file_url)
+		# print(xml_file_url)
 		req = urllib2.Request(xml_file_url)
 		response = urllib2.urlopen(req)
 		xml_page = response.read()
