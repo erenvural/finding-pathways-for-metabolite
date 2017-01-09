@@ -54,7 +54,8 @@ HTML_TEMPLATE = """<html lang="en">
 with open('output/{}.json'.format(metabolite_name), 'r') as fp:
 		result = json.load(fp)
 
-inner_html = ""
+inner_html = "" # for HTML
+rows = [] # for TSV
 for pathway_scr in result['pathways'].keys():
 	inner_html += """
 				<tr>
@@ -78,11 +79,16 @@ for pathway_scr in result['pathways'].keys():
 						<td><a target="_blank" href="{2}">{2}</a></td>
 					</tr>
 					""".format(i+1, pathway['name'], pathway['url'], match_type, parent_name)
+		line = "{0}\t{3}:{4}\t{1}\t{2}\n".format(i+1, pathway['name'], pathway['url'], match_type, parent_name)
+		rows.append(line)
 
 # print(HTML_TEMPLATE.format(metabolite_name, inner_html))
-
 
 with open('output/{}.html'.format(metabolite_name), 'w') as fp:
 		fp.write(HTML_TEMPLATE.format(metabolite_name, inner_html))
 
 webbrowser.open("output/{}.html".format(metabolite_name))
+
+with open('output/{}.tsv'.format(metabolite_name), 'w')	as fp:
+	fp.write("\t".join(["#", "Matching Type:With (M/S/P)", "Pathway Name", "Pathway URL", "\n"]))
+	fp.writelines(rows)

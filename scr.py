@@ -12,27 +12,36 @@ for initial_path in ["output", "resource"]:
 		os.makedirs(initial_path)
 default_options = CONFIG['default_options']
 
+def println(string, indent=0, color=""):
+	print('{0}{1}{2}{3}'.format(" " * indent, color, string, Utils.bcolors.ENDC))
+
 def download_names_tsv():
 	command = """cd resource && wget {} -O names.tsv.gz && gzip -d names.tsv.gz && cd ..""".format(CONFIG['names_tsv_url'])
 	os.system(command)
 	if os.path.exists("resource/names.tsv"):
-		print("We get the file.")
+		println("We get the file.", color=Utils.bcolors.OKGREEN)
+		println("#" * 60, color=Utils.bcolors.HEADER)
 	else:
-		print("We cannot get the file.")
+		println("We cannot get the file.", color=Utils.bcolors.FAIL)
 		sys.exit(1)
 
 if not os.path.exists("resource/names.tsv"):
-	print("Cannot find the names.tsv. We will download for you.")
+	println("Cannot find the names.tsv. We will download for you.", color=Utils.bcolors.OKGREEN)
 	download_names_tsv()
 
 
-# parameterization
-metabolite_name = sys.argv[1]
+# default parameters
 down_tsv = default_options['download_tsv'] # False
 show_result = default_options['show_result'] # False
 inc_syn = default_options['include_synonyms'] # True
 inc_prec = default_options['include_precursors'] # True
 
+if len(sys.argv) != 1:
+	metabolite_name = sys.argv[1]
+else:
+	raise Exception(Utils.bcolors.FAIL + "Please specify at least a metabolite(compound) name" + Utils.bcolors.ENDC)
+
+# parameterization
 if len(sys.argv) > 2:
 	sys_args = sys.argv[2]
 	combinations = ['','-msp', '-mps', '-smp', '-spm', '-pms', '-psm', '-sp', '-ps']
@@ -52,14 +61,14 @@ if len(sys.argv) > 2:
 		elif sys_args == '--download-tsv':
 			down_tsv = True 
 	else:
-		raise Exception("please try again with right parameters")
-
+		raise Exception(Utils.bcolors.FAIL + "Please try again with right parameters" + Utils.bcolors.ENDC)
 elif len(sys.argv) > 3:
 	sys_args = sys.argv[3]
 	if sys_args == '--download-tsv':
 		down_tsv = True
 	else:
 		down_tsv = False
+
 
 if down_tsv:
 	download_names_tsv()
@@ -72,8 +81,8 @@ if show_result:
 with open('output/{}.json'.format(metabolite_name), 'w') as fp:
 	json.dump(Utils(metabolite_name, synonym=inc_syn, precursor=inc_prec).result, fp, indent=4)
 
-# clean unnecessary files
+# Remove unnecessary files
 os.system("rm -rf output/*.txt")
 
-# Create HTML file for displaying data from JSON
+# Create HTML and TSV file for displaying data from JSON
 os.system("python prepare_output.py '{}'".format(metabolite_name))

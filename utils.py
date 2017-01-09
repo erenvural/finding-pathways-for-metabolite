@@ -22,10 +22,11 @@ class Utils:
 
 	COMMON_PRECURSORS = ["ATP", "H2O", 'CO2', 'CO']
 
+	INDENT = 2
+
 	__XML_IDENTIFIER_FOR_CHEBI__ = "{http://www.ebi.ac.uk/webservices/chebi}" # self.__XML_IDENTIFIER_FOR_CHEBI__
 	__XML_IDENTIFIER_FOR_SOAP_ENVELOPE__ = "{http://schemas.xmlsoap.org/soap/envelope/}"
 
-	# SEARCH_URL = "https://www.ebi.ac.uk/chebi/advancedSearchFT.do?queryBean.stars=2&searchString="
 	COMPOUND_URL = "https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:"
 	CHEBI_XML_URL = "https://www.ebi.ac.uk/webservices/chebi/2.0/test/getCompleteEntity?chebiId="
 	KEGG_REACTION_URL = "http://rest.kegg.jp/find/rn/"
@@ -38,23 +39,23 @@ class Utils:
 		self.compound_id = self.get_compound_id(self.metabolite) # came from tsv
 		self.result = {'name': self.metabolite, 'chebiID': self.compound_id}
 		if synonym and not precursor:
-			print(self.bcolors.OKBLUE + "We will search pathways for: {} and its synonyms (excluding precursors)...".format(metabolite) + self.bcolors.ENDC)
+			self.println("We will search pathways for: {} and its synonyms (excluding precursors)...".format(metabolite), color=self.bcolors.OKGREEN)
 			self.get_synonyms()
 			pathway_getting_list = [self.metabolite] + self.result['synonyms']
 		elif synonym and precursor:
-			print(self.bcolors.OKBLUE + "We will search pathways for: {}, its synonyms and its precursors...".format(metabolite) + self.bcolors.ENDC)
+			self.println("We will search pathways for: {}, its synonyms and its precursors...".format(metabolite), color=self.bcolors.OKGREEN)
 			self.get_synonyms()
 			self.get_precursors([self.metabolite] + self.result['synonyms'])
 			pathway_getting_list = [self.metabolite] + self.result['synonyms'] + self.result['precursors']
 		elif not synonym and precursor:
-			print(self.bcolors.OKBLUE + "We will search pathways for: {} and its precursors (excluding synonyms)...".format(metabolite) + self.bcolors.ENDC)
+			self.println("We will search pathways for: {} and its precursors (excluding synonyms)...".format(metabolite), color=self.bcolors.OKGREEN)
 			self.get_precursors([self.metabolite])
 			pathway_getting_list = [self.metabolite] + self.result['precursors']
 		elif not synonym and not precursor:
-			print(self.bcolors.OKBLUE + "We will search pathways for: {} (exclude synonyms and precursors)...".format(metabolite) + self.bcolors.ENDC)
+			self.println("We will search pathways for: {} (exclude synonyms and precursors)...".format(metabolite), color=self.bcolors.OKGREEN)
 			pathway_getting_list = [self.metabolite]
 		else:
-			print(self.bcolors.FAIL + "Parameters not recognized" + self.bcolors.ENDC)
+			self.println("Parameters not recognized", color=self.bcolors.FAIL)
 			sys.exit(1)
 		self.get_pathways(pathway_getting_list)
 
@@ -70,7 +71,7 @@ class Utils:
 		return result
 
 	def get_synonyms(self):
-		print("Getting synonyms for: {} (CheBI ID: {})".format(self.metabolite, self.compound_id))
+		self.println("Getting synonyms for: {} (CheBI ID: {})".format(self.metabolite, self.compound_id), indent=self.INDENT, color=self.bcolors.BOLD+self.bcolors.OKBLUE)
 		xml_file_url = self.CHEBI_XML_URL + self.compound_id
 		req = urllib2.Request(xml_file_url)
 		response = urllib2.urlopen(req)
@@ -88,27 +89,23 @@ class Utils:
 				synonym_name = syn.find("{0}data".format(self.__XML_IDENTIFIER_FOR_CHEBI__)).text
 				if synonym_name != self.metabolite:
 					synonyms_list.append(synonym_name)
-		# print(synonyms_list)
-		# if self.metabolite.lower() in [s.lower() for s in synonyms_list]:
-		print("# of  of synonyms found for {}: {}".format(self.metabolite, len(synonyms_list)))
-		print("Getting Synonyms process done")
+		
+		self.println("# of synonyms found for {}: {}".format(self.metabolite, len(synonyms_list)), indent=self.INDENT * 2, color=self.bcolors.OKBLUE)
+		self.println("Getting Synonyms process done", indent=self.INDENT * 2, color=self.bcolors.OKBLUE)
 		self.result['synonyms'] = synonyms_list
 
 	def get_precursors(self, search_list):
-		# print(search_list)
 		result = []
 		for (i, search_term) in enumerate(search_list):
-			# print(i, search_term)
-			print("Getting Precursors for: " + search_term)
+			self.println("Getting Precursors for: {}".format(search_term), indent=self.INDENT, color=self.bcolors.BOLD+self.bcolors.OKBLUE)
 
 			reaction_url = self.KEGG_REACTION_URL + search_term
 
-			# print("HTTP Request for: " + reaction_url)
 			command = """curl -s "%s" | perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /%s/i) { print "$1\n" }  }}' """ % (reaction_url, search_term)
 			precursors_candidates = os.popen(command).read()
 
 			precursors_fc = self.get_precursor_list(precursors_candidates)
-			print("# of precursors found for {}: {}".format(search_term, len(precursors_fc)))
+			self.println("# of precursors found for {}: {}".format(search_term, len(precursors_fc)), indent=self.INDENT * 2, color=self.bcolors.OKBLUE)
 
 			if i == 0: # Metabolite itself
 				for prec in precursors_fc:
@@ -127,10 +124,9 @@ class Utils:
 							}
 						result.append(precursor)
 
-		# print(result)
 		# self.result['precursors'] = result[:3] # for debug uncomment this and comment the previous line
+		self.println("Getting Precursors process done", indent=self.INDENT * 2, color=self.bcolors.OKBLUE)
 		self.result['precursors'] = result
-		print("Getting Precursors process done")
 
 
 	def is_common(self, precursor):
@@ -153,9 +149,8 @@ class Utils:
 	def get_pathways(self, search_list):
 		result = {'reactome': [], 'wikipathways': []}
 		for (i, search_term) in enumerate(search_list):
-			# print(i, search_term)
 			if i == 0: # metabolite itself
-				print("Getting Pathways for: {}".format(search_term))
+				self.println("Getting Pathways for: {}".format(search_term), indent=self.INDENT, color=self.bcolors.BOLD+self.bcolors.OKBLUE)
 				parent = { 'type': "M", 'name': search_term }
 				for pathway in self.get_pathways_from_reactome(search_term, parent):
 						result['reactome'].append(pathway)
@@ -163,25 +158,26 @@ class Utils:
 						result['wikipathways'].append(pathway)
 			else:
 				if type(search_term) == str: # synonyms
-					print("Getting Pathways for: {}".format(search_term))
+					self.println("Getting Pathways for: {}".format(search_term), indent=self.INDENT, color=self.bcolors.BOLD+self.bcolors.OKBLUE)
 					parent = { 'type': "S", 'name': search_term }
 					for pathway in self.get_pathways_from_reactome(search_term, parent):
 						result['reactome'].append(pathway)
 					for pathway in self.get_pathways_from_wikipathways(search_term, parent):
 						result['wikipathways'].append(pathway)
 				elif type(search_term) == dict: # precursors
-					print("Getting Pathways for: {}".format(search_term['name']))
+					self.println("Getting Pathways for: {}".format(search_term['name']), indent=self.INDENT, color=self.bcolors.BOLD+self.bcolors.OKBLUE)
 					parent = search_term
 					for pathway in self.get_pathways_from_reactome(search_term['name'], parent):
 						result['reactome'].append(pathway)
 					for pathway in self.get_pathways_from_wikipathways(search_term['name'], parent):
 						result['wikipathways'].append(pathway)
 				else:
-					print(self.bcolors.FAIL + "Someting went wrong while getting pathways" + self.bcolors.ENDC)
+					self.println("Someting went wrong while getting pathways", indent=self.INDENT, color=self.bcolors.BOLD+self.bcolors.FAIL)
 					sys.exit(1)
-		# print(result['reactome'])
-		print("Te total # of pathways for {}: {}".format(self.metabolite, len(result['reactome']) + len(result['wikipathways']) ))
-		print("Getting Pathways process done")
+
+		self.println("#"*60, indent=self.INDENT, color=self.bcolors.OKBLUE)
+		self.println("The total # of pathways for {}: {}".format(self.metabolite, len(result['reactome']) + len(result['wikipathways'])), indent=self.INDENT, color=self.bcolors.OKBLUE)
+		self.println("Getting Pathways process done", indent=self.INDENT, color=self.bcolors.OKBLUE)
 		self.result['pathways'] = result
 
 	def get_pathways_from_reactome(self, search_term, parent):
@@ -199,9 +195,7 @@ class Utils:
 		return reactome_pathway_list
 
 	def get_pathways_from_wikipathways(self, search_term, parent):
-		# http://webservice.wikipathways.org/findPathwaysByText?query=glutamate
 		xml_file_url = self.WPW_XML_URL + search_term
-		# print(xml_file_url)
 		req = urllib2.Request(xml_file_url)
 		response = urllib2.urlopen(req)
 		xml_page = response.read()
@@ -215,3 +209,6 @@ class Utils:
 			wpw_pathways_list.append(pathway)
 
 		return wpw_pathways_list
+
+	def println(self, string, indent=0, color=""):
+		print('{0}{1}{2}{3}'.format(" " * indent, color, string, self.bcolors.ENDC))
