@@ -58,9 +58,9 @@ inner_html = ""
 for pathway_scr in result['pathways'].keys():
 	inner_html += """
 				<tr>
-					<th colspan="4">{0}</th>
+					<th colspan="4">{0}: {1}</th>
 				</tr>
-				""".format(pathway_scr.title())
+				""".format(pathway_scr.title(), len(result['pathways'][pathway_scr]))
 	for (i, pathway) in enumerate(result['pathways'][pathway_scr]):
 		if 'parent' in pathway['parent'].keys():
 			parent_type = pathway['parent']['parent']['type']

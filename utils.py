@@ -19,7 +19,7 @@ class Utils:
 		CONFIG = json.load(fp)
 
 	TSV_FILE = CONFIG['names_tsv']
-	
+
 	COMMON_PRECURSORS = ["ATP", "H2O", 'CO2', 'CO']
 
 	__XML_IDENTIFIER_FOR_CHEBI__ = "{http://www.ebi.ac.uk/webservices/chebi}" # self.__XML_IDENTIFIER_FOR_CHEBI__
@@ -70,6 +70,7 @@ class Utils:
 		return result
 
 	def get_synonyms(self):
+		print("Getting synonyms for: {} (CheBI ID: {})".format(self.metabolite, self.compound_id))
 		xml_file_url = self.CHEBI_XML_URL + self.compound_id
 		req = urllib2.Request(xml_file_url)
 		response = urllib2.urlopen(req)
@@ -89,6 +90,8 @@ class Utils:
 					synonyms_list.append(synonym_name)
 		# print(synonyms_list)
 		# if self.metabolite.lower() in [s.lower() for s in synonyms_list]:
+		print("# of  of synonyms found for {}: {}".format(self.metabolite, len(synonyms_list)))
+		print("Getting Synonyms process done")
 		self.result['synonyms'] = synonyms_list
 
 	def get_precursors(self, search_list):
@@ -98,9 +101,9 @@ class Utils:
 			# print(i, search_term)
 			print("Getting Precursors for: " + search_term)
 
-			reaction_url = self.KEGG_REACTION_URL + search_term 
+			reaction_url = self.KEGG_REACTION_URL + search_term
 
-			print("HTTP Request for: " + reaction_url)
+			# print("HTTP Request for: " + reaction_url)
 			command = """curl -s "%s" | perl -e 'while(<>){ if ($_ =~ /^rn\:R[0-9]*\s*(.*)\<\=\>/){ if ($1 !~ /%s/i) { print "$1\n" }  }}' """ % (reaction_url, search_term)
 			precursors_candidates = os.popen(command).read()
 
@@ -127,14 +130,14 @@ class Utils:
 		# print(result)
 		# self.result['precursors'] = result[:3] # for debug uncomment this and comment the previous line
 		self.result['precursors'] = result
-		print("Getting Precursors done")
+		print("Getting Precursors process done")
 
 
 	def is_common(self, precursor):
 		for c_pre in self.COMMON_PRECURSORS:
 			if precursor.find(c_pre) != -1:
 				return True
-		return False	
+		return False
 
 	def get_precursor_list(self, precursors_candidates):
 		lines = precursors_candidates.split("\n")
@@ -152,6 +155,7 @@ class Utils:
 		for (i, search_term) in enumerate(search_list):
 			# print(i, search_term)
 			if i == 0: # metabolite itself
+				print("Getting Pathways for: {}".format(search_term))
 				parent = { 'type': "M", 'name': search_term }
 				for pathway in self.get_pathways_from_reactome(search_term, parent):
 						result['reactome'].append(pathway)
@@ -159,12 +163,14 @@ class Utils:
 						result['wikipathways'].append(pathway)
 			else:
 				if type(search_term) == str: # synonyms
+					print("Getting Pathways for: {}".format(search_term))
 					parent = { 'type': "S", 'name': search_term }
 					for pathway in self.get_pathways_from_reactome(search_term, parent):
 						result['reactome'].append(pathway)
 					for pathway in self.get_pathways_from_wikipathways(search_term, parent):
 						result['wikipathways'].append(pathway)
 				elif type(search_term) == dict: # precursors
+					print("Getting Pathways for: {}".format(search_term['name']))
 					parent = search_term
 					for pathway in self.get_pathways_from_reactome(search_term['name'], parent):
 						result['reactome'].append(pathway)
@@ -174,6 +180,8 @@ class Utils:
 					print(self.bcolors.FAIL + "Someting went wrong while getting pathways" + self.bcolors.ENDC)
 					sys.exit(1)
 		# print(result['reactome'])
+		print("Te total # of pathways for {}: {}".format(self.metabolite, len(result['reactome']) + len(result['wikipathways']) ))
+		print("Getting Pathways process done")
 		self.result['pathways'] = result
 
 	def get_pathways_from_reactome(self, search_term, parent):
