@@ -24,16 +24,19 @@ if not os.path.exists("resource/names.tsv"):
 # parameterization
 metabolite_name = sys.argv[1]
 down_tsv = False
+show_result = False
 inc_syn = True
 inc_prec = True
 if len(sys.argv) > 2:
 	sys_args = sys.argv[2]
+	if sys_args == '--download-tsv':
+		down_tsv = True 
+	if sys_args == '--show-result':
+		show_result = True
 	combinations = ['','-msp', '-mps', '-smp', '-spm', '-pms', '-psm', '-sp', '-ps']
-	if sys_args in combinations or sys_args == "--download-tsv":
+	if sys_args in combinations:
 		inc_syn = True
 		inc_prec = True
-		if sys_args == "--download-tsv":
-			down_tsv = True
 	elif sys_args in ('-ms', '-sm', '-s'):
 		inc_prec = False
 	elif sys_args in ('-mp', '-pm', '-p'):
@@ -43,8 +46,6 @@ if len(sys.argv) > 2:
 		inc_prec = False
 	else:
 		raise Exception("please try again with right parameters")
-	if sys_args == "--download-tsv":
-		down_tsv = True
 
 if len(sys.argv) > 3:
 	sys_args = sys.argv[3]
